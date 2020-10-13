@@ -11,15 +11,24 @@ if(NOT PYTHONINTERP_FOUND)
     message(FATAL_ERROR "Python interpreter not found.")
 endif()
 
+if(PYTHON_VERSION_MAJOR EQUAL 2)
+    set(PYTHON2_EXECUTABLE "${PYTHON_EXECUTABLE}")
+else()
+    set(PYTHON2_EXECUTABLE python2)
+endif()
+
 ### Panda3D dir ###
 if(APPLE)
     SET(PANDA_DIR "/Developer/Panda3D" CACHE STRING "Panda3D directory.")
-endif()
-if(WIN32)
+
+elseif (UNIX)
+    SET(PANDA_DIR "/usr" CACHE STRING "Panda3D directory.")
+
+elseif (WIN32)
     SET(PANDA_DIR "C:/Panda3D-1.11.0" CACHE STRING "Panda3D directory.")
 endif()
 SET(BUILD_STATIC_LIB OFF CACHE BOOL "If true, will build a static lib")
-execute_process(COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/src/run_interrogate.py" "${PANDA_DIR}")
+execute_process(COMMAND ${PYTHON2_EXECUTABLE} "${CMAKE_SOURCE_DIR}/src/run_interrogate.py" "${PANDA_DIR}")
 
 ### Define core components ###
 set(BASE_FILES
@@ -74,8 +83,6 @@ set(COMPONENTS_FILES
     src/components/DNAProp.h
     src/components/DNASign.cxx
     src/components/DNASign.h
-    src/components/DNASignText.cxx
-    src/components/DNASignText.h
     src/components/DNASignBaseline.cxx
     src/components/DNASignBaseline.h
     src/components/DNASignGraphic.cxx
@@ -107,9 +114,11 @@ include_directories(src/suit)
 include_directories(src/components)
 include_directories(src/parser)
 include_directories(${PANDA_DIR}/include)
+include_directories(${PANDA_DIR}/include/panda3d)
 include_directories(${PYTHON_INCLUDE_DIR})
 include_directories(/usr/include/eigen3)
 link_directories(${PANDA_DIR}/lib)
+link_directories(/usr/lib/x86_64-linux-gnu/panda3d)
 
 set(LIBPFX "")
 if(MSVC)
@@ -151,6 +160,7 @@ if(NOT BUILD_STATIC_LIB)
     # Add p3interrogatedb, if it exists
     find_library(HAVE_P3INTERROGATEDB
                  ${LIBPFX}p3interrogatedb
+                 PATHS /usr/lib/x86_64-linux-gnu/panda3d
                  HINTS ${PANDA_DIR}/lib)
 
     if(HAVE_P3INTERROGATEDB)
@@ -163,6 +173,7 @@ if(NOT BUILD_STATIC_LIB)
     # Add p3pandatoolbase, if it exists
     find_library(HAVE_P3PANDATOOLBASE
                  ${LIBPFX}p3pandatoolbase
+                 PATHS /usr/lib/x86_64-linux-gnu/panda3d
                  HINTS ${PANDA_DIR}/lib)
 
     if(HAVE_P3PANDATOOLBASE)
@@ -184,7 +195,7 @@ if(NOT BUILD_STATIC_LIB)
         target_link_libraries(libpandadna ${PANDA_LIBS} ${PYTHON_LIBRARY})
         add_custom_command(TARGET libpandadna
                            PRE_BUILD
-                           COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/src/run_interrogate.py" "${PANDA_DIR}"
+                           COMMAND ${PYTHON2_EXECUTABLE} "${CMAKE_SOURCE_DIR}/src/run_interrogate.py" "${PANDA_DIR}"
                            COMMENT "Interrogate")
 
     else()
@@ -198,7 +209,7 @@ if(NOT BUILD_STATIC_LIB)
         target_link_libraries(pandadna ${PANDA_LIBS} ${PYTHON_LIBRARY})
         add_custom_command(TARGET pandadna
                            PRE_BUILD
-                           COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/src/run_interrogate.py" "${PANDA_DIR}"
+                           COMMAND ${PYTHON2_EXECUTABLE} "${CMAKE_SOURCE_DIR}/src/run_interrogate.py" "${PANDA_DIR}"
                            COMMENT "Interrogate")
     endif()
 
@@ -214,7 +225,7 @@ else()
         )
         add_custom_command(TARGET libpandadna
                            PRE_BUILD
-                           COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/src/run_interrogate.py" "${PANDA_DIR}"
+                           COMMAND ${PYTHON2_EXECUTABLE} "${CMAKE_SOURCE_DIR}/src/run_interrogate.py" "${PANDA_DIR}"
                            COMMENT "Interrogate")
 
     else()
@@ -227,7 +238,7 @@ else()
         )
         add_custom_command(TARGET pandadna
                            PRE_BUILD
-                           COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/src/run_interrogate.py" "${PANDA_DIR}"
+                           COMMAND ${PYTHON2_EXECUTABLE} "${CMAKE_SOURCE_DIR}/src/run_interrogate.py" "${PANDA_DIR}"
                            COMMENT "Interrogate")
     endif()
 
